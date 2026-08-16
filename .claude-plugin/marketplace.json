@@ -25,6 +25,12 @@
       "description": "Build a Tiger admin or account screen from the standard template so it matches the rest of the back office — the five pieces, saving through /api with TigerButton/TigerDOM.",
       "source": "./skills/tiger-admin-screen",
       "category": "Tiger"
+    },
+    {
+      "name": "tiger-design",
+      "description": "Design and build the visual layer of a Tiger app the framework-native way — PUMA/Bootstrap 5 zero-build, skins as CSS-variable overlays, reskinnable .phtml views, CMS blocks/partials, GrapesJS components, theme modules.",
+      "source": "./skills/tiger-design",
+      "category": "Tiger"
     }
   ]
 }
