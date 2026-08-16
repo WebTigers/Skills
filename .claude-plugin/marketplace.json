@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json.schemastore.org/claude-plugin-marketplace.json",
+  "name": "webtigers-skills",
+  "version": "0.1.0",
+  "description": "First-party Agent Skills for building on Tiger (TigerZF) — the WebTigers platform. Portable SKILL.md; works in Claude Code, the Claude API, and TigerAgent's in-app Skills browser.",
+  "owner": {
+    "name": "WebTigers",
+    "url": "https://github.com/WebTigers"
+  },
+  "plugins": [
+    {
+      "name": "tiger-module",
+      "description": "Scaffold and build a complete Tiger feature module — controller, /api service, form, ACL, views, config, migrations, i18n — the update-safe \"extend, don't edit\" way.",
+      "source": "./skills/tiger-module",
+      "category": "Tiger"
+    },
+    {
+      "name": "tiger-webservice",
+      "description": "Write a Tiger /api web service the right way — the single-endpoint TIGER message pattern, validate-then-transaction, deny-by-default ACL, and the standard response envelope.",
+      "source": "./skills/tiger-webservice",
+      "category": "Tiger"
+    },
+    {
+      "name": "tiger-admin-screen",
+      "description": "Build a Tiger admin or account screen from the standard template so it matches the rest of the back office — the five pieces, saving through /api with TigerButton/TigerDOM.",
+      "source": "./skills/tiger-admin-screen",
+      "category": "Tiger"
+    }
+  ]
+}
