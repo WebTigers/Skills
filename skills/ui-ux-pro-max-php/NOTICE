@@ -1,0 +1,56 @@
+ui-ux-pro-max-php
+=================
+
+This skill folder is a PHP port ("fork") of the "ui-ux-pro-max" Agent Skill.
+
+Upstream project:  nextlevelbuilder/ui-ux-pro-max-skill
+Upstream URL:      https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
+Upstream license:  MIT License, Copyright (c) 2024 Next Level Builder
+
+What is derived from the upstream project
+-----------------------------------------
+* Everything under `data/` (the CSV design database and the catalog-summary.json /
+  data-provenance.json manifests) is copied/ported from the upstream `data/` directory.
+  Two large upstream catalogs are intentionally OMITTED from this fork to keep it lean:
+  `phosphor-icons-upstream.json` and `google-font-licenses.json`.
+* `scripts/search.php` is a port of the upstream Python search engine
+  (`scripts/core.py` + `scripts/search.py`): the same CSV_CONFIG domain mapping, the same
+  BM25 ranking, tokenization, domain auto-detection, query rewrites, score thresholds, and
+  output formatting. It is a derivative work.
+
+What is original to this fork
+-----------------------------
+* `data/stacks/tiger-php.csv` — Tiger/TigerZF (PHP) stack guidance, authored for this fork
+  on the upstream stack-CSV schema.
+* The PHP implementation itself (`scripts/search.php`) and this SKILL.md/NOTICE.
+
+Licensing
+---------
+Because it derives from MIT-licensed material, THIS SKILL FOLDER
+(`skills/ui-ux-pro-max-php/`) is governed by the MIT License reproduced below. This is an
+exception within the wider WebTigers/Skills repository, which is otherwise BSD-3-Clause.
+
+The upstream `--design-system` generator mode (`design_system.py`) is not ported in this v1.
+
+-------------------------------------------------------------------------------
+MIT License
+
+Copyright (c) 2024 Next Level Builder
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

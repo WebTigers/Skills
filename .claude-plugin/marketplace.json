@@ -31,6 +31,12 @@
       "description": "Design and build the visual layer of a Tiger app the framework-native way — PUMA/Bootstrap 5 zero-build, skins as CSS-variable overlays, reskinnable .phtml views, CMS blocks/partials, GrapesJS components, theme modules.",
       "source": "./skills/tiger-design",
       "category": "Tiger"
+    },
+    {
+      "name": "ui-ux-pro-max-php",
+      "description": "A dependency-free PHP port of the ui-ux-pro-max design-intelligence database (50+ UI styles, ~190 palettes, font pairings, UX/accessibility guidelines, per-stack rules) searchable from one PHP script. Use before choosing any design tokens. Fork of nextlevelbuilder/ui-ux-pro-max-skill (MIT); that license governs this skill folder.",
+      "source": "./skills/ui-ux-pro-max-php",
+      "category": "Design"
     }
   ]
 }
