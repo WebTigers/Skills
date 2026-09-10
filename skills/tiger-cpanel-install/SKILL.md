@@ -1,6 +1,6 @@
 ---
 name: tiger-cpanel-install
-description: Install Tiger on a shared cPanel account end to end — get HTTPS up first, drive the one-file web installer's wizard, and verify the site really works. Covers what an agent can do with the user's authenticated cPanel session versus what it must hand back. Use when asked to install, set up, or stand up Tiger on cPanel, shared hosting, or any host without shell access, and when an install has failed and needs diagnosing.
+description: Install Tiger on a shared cPanel account end to end — get HTTPS up first, drive the one-file web installer's wizard, and verify the site really works. Covers what an agent can do with the user's authenticated cPanel session versus what it must hand back. Also covers installing alongside a site already running on the account — creating the subdomain or second domain and installing into its document root. Use when asked to install, set up, or stand up Tiger on cPanel, shared hosting, or any host without shell access, to add Tiger to a subdomain or second domain beside an existing site, and when an install has failed and needs diagnosing.
 ---
 
 # Installing Tiger on shared cPanel
@@ -17,7 +17,7 @@ column you are in before you start.
 | Step needs | Agent driving the user's **logged-in cPanel browser session** | Headless / API-only client |
 |---|---|---|
 | **Nothing** — the installer wizard itself | does it | does it |
-| **An authenticated cPanel session** — create the database, run AutoSSL | **can do it** — click through the UI | **hand back** with exact instructions |
+| **An authenticated cPanel session** — create the database, add a domain or subdomain, run AutoSSL | **can do it** — click through the UI | **hand back** with exact instructions |
 | **WHM / reseller** — create the cPanel account | hand back (unless the user is a reseller and says otherwise) | hand back |
 
 **If you do not have a cPanel session, say so early.** Being asked for a database halfway through an
@@ -42,7 +42,51 @@ Two rules that hold in every column:
   it is registered but its nameservers are not answering for it.
 - **You can upload a file** — File Manager or FTP. No shell; uploading is how the installer arrives.
 
-## 2. Get HTTPS working **before** you install
+## 2. Decide where Tiger goes
+
+Not every install owns the account. A user may be adding Tiger **beside a site that is already
+running** — on a subdomain (`app.example.com`), or on a second domain parked in the same cPanel
+account. Settle this before anything else: it decides which hostname gets the certificate (§3), which
+database you create (§4), and which directory the installer is uploaded into (§5).
+
+| They want | In cPanel | Docroot you install into |
+|---|---|---|
+| Tiger **is** the site | nothing to create | `public_html` |
+| Tiger on a **subdomain** | *Domains* → **Create A New Domain** → `app.example.com` | cPanel proposes `public_html/app` |
+| Tiger on **another domain** they own | same screen, enter the domain | `public_html/<domain>` |
+
+**Creating the domain is a cPanel-session job** — the Domains UI, exactly as a person would. A
+user-space PHP script can no more add a domain than it can create a database, so this sits in the same
+column as §4 on the access table above.
+
+Accept the document root cPanel proposes unless the user asks otherwise. It can be edited on that
+screen, but the default is the well-trodden path and the one every other site on a typical server uses.
+
+**DNS differs by case.** A subdomain of a domain already on the account needs nothing — it is served
+from the existing zone. A *separate* domain must be registered with its nameservers already pointed at
+this server: run the same `dig +short A` check from §1 against the new name before going further.
+
+### What bites when you install beside an existing site
+
+- **The new site has a second URL.** cPanel puts the docroot *inside* `public_html`, so
+  `app.example.com` is also reachable at `example.com/app/`. That is a real path, not a redirect. Set
+  Tiger's site URL to the hostname you intend, and do not advertise the other one.
+
+- **The parent's `.htaccess` sits above your docroot.** If the existing site is WordPress — or Tiger —
+  its `public_html/.htaccess` ends in a front-controller catch-all along the lines of
+  `RewriteRule . /index.php [L]`, and your directory lives underneath it. The failure is nasty
+  precisely because **the home page works**: `/` resolves to a real file. It is the *routes* that
+  break. So verify a deep route, never just `/` — **Verify** below makes this a step.
+
+- **Database names collide.** cPanel prefixes every database with the account name, so the obvious
+  `cpuser_tiger` may already belong to the site that is running. Read the existing list first and pick
+  something specific — `cpuser_tigerapp`. The same goes for the database *user*.
+
+**Never modify the existing site to make room.** Do not edit its `.htaccess`, move its files, or
+repoint its document root. If Tiger cannot go in cleanly beside it, say so and let the user decide —
+breaking a working site to install a new one is never the trade to make on their behalf.
+
+## 3. Get HTTPS working **before** you install
 
 Do this now, not at the end. **The wizard asks the user to choose an admin password, and on a plain
 HTTP site that password crosses the network in the clear.** AutoSSL needs only DNS — not Tiger — so
@@ -54,6 +98,10 @@ is broken rather than DNS.
 
 cPanel → **SSL/TLS Status** → tick the domain and `www` → **Run AutoSSL**. Give it a minute, reload,
 and confirm a valid certificate.
+
+**Cert the hostname you are actually installing on.** If §2 had you create a subdomain or a second
+domain, that new name is what the browser will show — ticking only the account's main domain leaves the
+site you just built on a mismatched cert. A freshly created domain often appears in this list unticked.
 
 **On a fresh account, tick the wildcard entry too.** If the list shows `*.<domain>`, include it in the
 same run. A certificate covering only the bare domain and `www` leaves every other subdomain — the one
@@ -72,7 +120,7 @@ If HTTPS genuinely cannot be had — DNS is not ready and the user wants to proc
 their call to make knowingly. Tell them the admin password will travel in the clear and that they
 should change it once TLS is up.
 
-## 3. The database
+## 4. The database
 
 cPanel → *MySQL® Databases*: create a database, create a user with a strong password, then add the user
 to the database with **ALL PRIVILEGES**. cPanel prefixes both, e.g. `cpuser_tiger`.
@@ -86,7 +134,7 @@ with a cPanel session can, through the UI, exactly as a person would.
 > **The password must not contain a double quote (`"`).** The installer writes `local.ini` as INI and
 > refuses a password it cannot quote safely.
 
-## 4. Place the installer
+## 5. Place the installer
 
 Take the current release — not a raw file from a branch:
 
@@ -95,17 +143,21 @@ https://github.com/WebTigers/TigerInstall/releases/latest
   → tiger-install.zip   (+ its .sha256)
 ```
 
-Unzip and upload `tiger-install.php` into the domain's document root (`public_html`, or the addon
-domain's docroot). Open `https://<domain>/tiger-install.php`.
+Unzip and upload `tiger-install.php` into **the document root you settled on in §2** — `public_html`
+for a plain install, or the subdomain/second-domain docroot when installing beside an existing site.
+Open `https://<domain>/tiger-install.php` on that hostname.
 
-## 5. Drive the wizard
+Getting this wrong is quiet: dropping the installer in `public_html` when Tiger was meant to live on
+`app.example.com` installs it over the *existing* site's docroot.
+
+## 6. Drive the wizard
 
 | Screen | Does | Needs |
 |---|---|---|
 | **Requirements** | Preflight: PHP, extensions, writability | read the verdict |
 | **Location** | Detects docroot, proposes an app dir **above** it | confirm the path |
 | **Download** | Fetches the vendored ZIP, verifies its checksum, extracts | a version, or accept latest |
-| **Database** | Tests the connection, writes `local.ini`, migrates | the three values from §3 |
+| **Database** | Tests the connection, writes `local.ini`, migrates | the three values from §4 |
 | **Admin** | Creates the founding org + owner | email, password, org name |
 
 **Retrying is safe and does not need a re-upload.** The installer only deletes itself *after* the owner
@@ -128,7 +180,11 @@ An HTTP 200 is not evidence the install worked. A shell with missing assets retu
 2. **A referenced CSS or JS asset actually loads.** Pull one `src`/`href` off the page and fetch it — a
    404 here means assets were never published, which is the most common "it looks broken" cause.
 3. `https://<domain>/auth/login` accepts the owner credentials you just created.
-4. The site is served over **HTTPS** (§2). If it is not, say so.
+4. The site is served over **HTTPS** (§3). If it is not, say so.
+5. **Installed beside an existing site (§2)? Fetch a deep route** — `/auth/login` counts — and confirm
+   the page is *Tiger's*, not the neighbouring site's. A parent `.htaccess` catch-all shows up exactly
+   here and nowhere else: `/` is a real file and looks perfect, while every route falls through to the
+   other site. Check the existing site still serves its own home page too.
 
 ## After
 
