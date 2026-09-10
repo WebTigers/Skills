@@ -37,6 +37,12 @@
       "description": "A dependency-free PHP port of the ui-ux-pro-max design-intelligence database (50+ UI styles, ~190 palettes, font pairings, UX/accessibility guidelines, per-stack rules) searchable from one PHP script. Use before choosing any design tokens. Fork of nextlevelbuilder/ui-ux-pro-max-skill (MIT); that license governs this skill folder.",
       "source": "./skills/ui-ux-pro-max-php",
       "category": "Design"
+    },
+    {
+      "name": "tiger-cpanel-install",
+      "description": "Install Tiger on a shared cPanel account end to end — drive the one-file web installer, verify the site really works, and hand back the three steps only a human can do in cPanel: create the account, create the database, run AutoSSL.",
+      "source": "./skills/tiger-cpanel-install",
+      "category": "Tiger"
     }
   ]
 }
