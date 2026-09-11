@@ -1,0 +1,30 @@
+name: Validate skills
+
+# Nothing in this repo is exercised by a test suite, and its skills are installed by URL straight
+# into someone's agent — so a malformed frontmatter key or a manifest `source` pointing at a
+# directory that no longer exists breaks the published install for everyone, silently. This is the
+# only thing standing between an edit and that.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      # No dependencies on purpose: the validator is stdlib-only, so it runs the same here as it
+      # does on a contributor's machine with `python3 .github/scripts/validate_skills.py`.
+      - name: Validate every SKILL.md and the marketplace manifest
+        run: python3 .github/scripts/validate_skills.py
