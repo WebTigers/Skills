@@ -40,6 +40,19 @@ has, never new executable power. Keep every skill grounded in Tiger's real, docu
    Manifest descriptions are marketplace-facing copy and are deliberately *not* required to match
    the `description` in `SKILL.md`.
 
+   External links are checked separately, on a daily schedule rather than per-PR, so a flaky network
+   never blocks a good change:
+
+   ```
+   python3 .github/scripts/check_links.py
+   ```
+
+   Skills **link** to canonical docs in other repos rather than forking copies of them — a forked doc
+   drifts silently. The cost is that renaming a file over there breaks a skill here, which is what
+   that check is for. For a GitHub `blob` link it also checks the `raw.githubusercontent` equivalent,
+   because raw is what an agent actually fetches and a moved file can 404 there while the pretty URL
+   still works.
+
 ## Quality bar
 
 - **Accurate over impressive.** Ground every claim in the platform docs (`AGENTS.md`, `WEBSERVICES.md`,

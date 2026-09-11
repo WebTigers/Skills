@@ -1,0 +1,29 @@
+name: Check links
+
+# Deliberately NOT on pull_request. This touches the network, and a transient failure or a GitHub rate
+# limit must never be the reason a good PR is blocked. A daily run catches drift within a day, which is
+# the right trade for links that live in someone else's repo.
+#
+# It exists because these skills LINK to canonical docs rather than fork copies of them. That is the
+# right call — a forked doc drifts silently — but it means renaming a file in another repo breaks this
+# one, and nothing else here would notice. An agent mid-install then cannot fetch the detail it was
+# told to go and read.
+
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Check every external link in every SKILL.md
+        run: python3 .github/scripts/check_links.py
