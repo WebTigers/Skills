@@ -100,7 +100,7 @@ So:
 
 | They asked for | Tool | |
 |---|---|---|
-| An image in the page | `media__media__upload`, then reference it | in scope |
+| An image in the page | `media__media__upload` (you have the file) · **`tigerimage__image__generate`** (you need one made) | in scope |
 | A blog post rather than a page | `blog__post__save` | in scope |
 | A section with its own navigation | a `type=layout` page containing `[menu name="…"]`, then point pages at it with `layout_key` | in scope |
 | Search | `search__search__*` | in scope |
@@ -110,6 +110,46 @@ The install-time token carries a curated starter set — **cms, blog, media, sea
 covers content but deliberately stops short of site configuration. If the request needs a theme or
 skin change, say so and point the user at `/admin` or at `/mcp/admin` to widen the token. Do not try to
 achieve it by editing content.
+
+---
+
+## 4b. Making an image that does not exist yet
+
+If the site has **TigerImage** installed, you can generate pictures even if your own model cannot draw
+— the module drives an image-capable provider on your behalf. This is what lets a text-only assistant
+finish a page rather than hand back one with gaps where the images should be.
+
+**Call `tigerimage__image__capability` FIRST, before you promise anything.** It answers without
+generating, and an unavailable answer tells you *which* problem it is:
+
+| `reason` | What it means | What to tell the user |
+|---|---|---|
+| *(available)* | a provider and key are configured | go ahead |
+| `no_image_provider` | nothing installed can draw | "this site has no image provider configured" — the answer names which ones would work |
+| `no_api_key` | the provider is set but has no usable key | a different fix: the key, not the provider |
+
+Promising an image and discovering afterwards that none can be made is the failure worth designing
+out. Ask first.
+
+Then:
+
+1. **`tigerimage__image__generate`** — `prompt`, plus optional `negative`, `size`, `n` (capped at 4
+   per call), `seed`. Returns image ids and their parameters.
+2. **`tigerimage__image__refine`** — `image_id` plus what you want changed. It inherits the parent's
+   parameters and uses it as a reference, so "the same but warmer" is one call rather than a retype.
+3. **`tigerimage__image__promote`** — `image_id`, optional `title`/`alt`. Returns a **`media_id`** you
+   drop straight into the page. **Nothing is in the Media Library until you promote it** — generated
+   images are drafts, and unpromoted ones are swept after the retention window.
+4. **`tigerimage__image__discard`** — for the variants you did not pick. Leaving them costs the user
+   money in storage and clutters their library later.
+
+**You will not receive the image bytes.** A tool result is text in your context window, and base64 of
+a single 1024px PNG is well over a megabyte of it. You get ids and metadata; a human looks at the
+picture. Judge by the prompt you sent and the parameters echoed back, and if you need a human eye, say
+so rather than guessing.
+
+**Write real alt text.** Pass `alt` on promote. A generated image with no alt text is an accessibility
+failure you introduced, and you are the one who knows what was asked for.
 
 ---
 
@@ -139,6 +179,9 @@ Each of these is a different answer. Tell the user which one it is.
 | The site 500s, or `/admin` is missing | the install did not finish | re-run the installer; see the `tiger-cpanel-install` skill |
 | The page saves but 404s | it is still `draft`, or the slug differs | set `status: published`; check the slug you were given back |
 | The page loads but nothing links to it | §3 was skipped | import the menu and add the item |
+| `tigerimage.error.no_image_provider` | nothing on this site can draw | say so; name the providers the answer lists. Do not retry |
+| `tigerimage.error.no_api_key` | provider set, key missing or unreadable | an admin adds the key — a different fix from the above |
+| `tigerimage.error.generation_failed` | the provider refused (often a safety filter) | the detail says why; change the prompt, do not retry it unchanged |
 
 **Never fake a result.** If a page is a draft, do not call it live. If the menu is untouched, say so.
 
