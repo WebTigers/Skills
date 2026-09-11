@@ -40,7 +40,7 @@
     },
     {
       "name": "tiger-cpanel-install",
-      "description": "Install Tiger on a shared cPanel account end to end — get HTTPS up before credentials are entered, drive the one-file web installer, and verify the site really works. Covers what an agent can do with the user's authenticated cPanel session versus what it must hand back.",
+      "description": "Install Tiger on a shared cPanel account end to end — get HTTPS up before credentials are entered, drive the one-file web installer, and verify the site really works. Handles installing beside a site already running on the account, on a subdomain or a second domain. Covers what an agent can do with the user's authenticated cPanel session versus what it must hand back.",
       "source": "./skills/tiger-cpanel-install",
       "category": "Tiger"
     }
