@@ -43,6 +43,12 @@
       "description": "Install Tiger on a shared cPanel account end to end — get HTTPS up before credentials are entered, drive the one-file web installer, and verify the site really works. Handles installing beside a site already running on the account, on a subdomain or a second domain. Covers what an agent can do with the user's authenticated cPanel session versus what it must hand back.",
       "source": "./skills/tiger-cpanel-install",
       "category": "Tiger"
+    },
+    {
+      "name": "tiger-authoring",
+      "description": "Connect to a Tiger site over MCP or /api and turn a plain-English request into a published, reachable page — the exact tool sequence, fixing the navigation a fresh install inherits from its theme, and a failure vocabulary for when the agent surface is off or out of scope.",
+      "source": "./skills/tiger-authoring",
+      "category": "Tiger"
     }
   ]
 }
