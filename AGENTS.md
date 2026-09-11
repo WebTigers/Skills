@@ -25,7 +25,20 @@ has, never new executable power. Keep every skill grounded in Tiger's real, docu
    { "name": "tiger-something", "description": "...", "source": "./skills/tiger-something", "category": "Tiger" }
    ```
 
-3. Open a PR.
+3. Run the validator, then open a PR:
+
+   ```
+   python3 .github/scripts/validate_skills.py
+   ```
+
+   CI runs exactly this on every PR. It checks that each `SKILL.md` opens with a closed frontmatter
+   fence carrying **only** `name` and `description`, that `name` matches its directory, that every
+   skill is published in `marketplace.json` and every manifest `source` still resolves to a real
+   folder with a `SKILL.md`, that relative links resolve, and that no `§N` cross-reference points at
+   a section the document doesn't have — the one that bites when you renumber sections.
+
+   Manifest descriptions are marketplace-facing copy and are deliberately *not* required to match
+   the `description` in `SKILL.md`.
 
 ## Quality bar
 
