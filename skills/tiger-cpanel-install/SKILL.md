@@ -52,12 +52,18 @@ database you create (§4), and which directory the installer is uploaded into (�
 | They want | In cPanel | Docroot you install into |
 |---|---|---|
 | Tiger **is** the site | nothing to create | `public_html` |
-| Tiger on a **subdomain** | *Domains* → **Create A New Domain** → `app.example.com` | cPanel proposes `public_html/app` |
+| Tiger on a **subdomain** | *Domains* → **Create A New Domain** → `app.example.com` | cPanel proposes `public_html/app` or `public_html/app.example.com` (version-dependent) |
 | Tiger on **another domain** they own | same screen, enter the domain | `public_html/<domain>` |
 
 **Creating the domain is a cPanel-session job** — the Domains UI, exactly as a person would. A
 user-space PHP script can no more add a domain than it can create a database, so this sits in the same
 column as §4 on the access table above.
+
+**UNTICK "Share document root (…/public_html) with '<main domain>'".** On current cPanel (138+) that
+box is **checked by default** and the page warns it **cannot be changed after the domain is created**.
+Left checked, the new domain serves the main site's `public_html`, the install lands beside the
+existing site, and there is no undo short of deleting the domain. Untick it so the new domain gets its
+own document root, then read the path cPanel proposes — it is the "Docroot you install into".
 
 Accept the document root cPanel proposes unless the user asks otherwise. It can be edited on that
 screen, but the default is the well-trodden path and the one every other site on a typical server uses.
@@ -112,6 +118,14 @@ the page lists; there is no cost to covering a name and a real cost to missing o
 If the wildcard is listed but AutoSSL will not issue for it, that is expected on some providers —
 HTTP validation cannot prove control of a wildcard, so it needs DNS-based validation. Do not fight it:
 the bare domain and `www` are what the install needs. Note it for the user and move on.
+
+**A freshly created subdomain is a special case: check `www.<subdomain>` too.** The AutoSSL run that
+cPanel triggers on creation covers the bare hostname only; `www.app.example.com` stays uncovered and the
+bare name may not be marked for renewal. After the install, open *SSL/TLS Status* and confirm BOTH rows
+for the new hostname read "will renew via AutoSSL" — if `www.` says the certificate does not cover it,
+run AutoSSL again with both ticked (or, where the provider refuses, issue a cert for the subdomain and
+`*.<subdomain>` via the SSL/TLS wizard with DNS validation). A `www.` variant that throws a browser
+warning reads as a broken site.
 
 - **With a cPanel session:** do it.
 - **Without one:** hand the user those exact steps and wait. It is worth the pause.
