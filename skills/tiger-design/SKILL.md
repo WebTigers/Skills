@@ -80,6 +80,35 @@ theme's layout (a full redesign); **`content`** styles only the theme's own ship
 CMS home/menu/other pages on the base theme (a vendor demo theme). Pick `content` when a theme's
 chrome/nav is built for *its* pages and shouldn't hijack the site.
 
+## Building a NEW theme — its layout, its menus, its pages
+
+A theme is a whole *view layer*, not a recolor — so a new theme is more than a skin. When you are
+building a new theme (not editing PUMA, not adding a skin), do these four things, the framework-native
+way (THEMES.md §8). Skipping any of them is the usual reason a new theme looks half-applied.
+
+1. **Create the theme's own LAYOUT.** A theme owns its chrome. Add
+   `themes/<theme>/layouts/scripts/<layout>.phtml` — the `<html>` shell: the `<head>` (title + skin +
+   asset slots), the header/nav, `<?= $this->layout()->content ?>` for the page body, and the footer.
+   Ship a `default` layout at minimum (a few named layouts is fine when chrome varies — a landing header
+   vs an inner-page header). **Do not reuse another theme's layout** — a new theme means a new layout, or
+   its pages render in the base theme's chrome and nothing looks like the new design.
+2. **Build the theme's own header + footer MENUS.** Declare them in `themes/<theme>/configs/menus.ini`
+   (e.g. a `[primary]` header menu and a `[footer]` / `[footer-social]` menu; items are `label` + `url`
+   **or** `page_key`, nestable via `children`), and **render them in the layout** —
+   `<?= $this->menu('primary', ['class'=>'navbar-nav','item_class'=>'nav-item','link_class'=>'nav-link']) ?>`
+   for the header, `<?= $this->menu('footer') ?>` for the footer. They render out of the box (Tiger_Menu
+   falls back to the theme `.ini`) and the CMS Menus admin lists them as editable (fork-on-first-edit).
+   A hardcoded `<ul>` in the layout is wrong — nobody can edit it, and it won't localize or auth-filter.
+3. **Point every new themed PAGE at that layout.** Each theme-shipped page `content/<slug>.phtml` names
+   the layout in its hint: `<!-- tiger:page title="About" layout="<layout>" skin="default" -->`. Use the
+   theme's own layout (from step 1) for every page you build, so the chrome is consistent — never leave a
+   page on the base layout by omitting `layout`.
+4. **Put CSS and JS in their OWN files.** A theme's styles and scripts live under
+   `themes/<theme>/assets/` — `assets/css/*.css`, `assets/js/*.js`, and skins in `assets/skins/*.css` —
+   referenced with `$this->asset('css/theme.css')` / `$this->asset('js/theme.js')`, **never** an inline
+   `<style>` or `<script>` in the layout or a page (the golden rule below). One file per concern:
+   cache-busted, CSP-clean, and reskinnable.
+
 ## Menus: `configs/menus.ini` (base tier), CMS overrides (live tier)
 
 A theme declares nav in `configs/menus.ini` (one `[section]` per menu key, `items.<k>.label` + `url` or
@@ -95,6 +124,10 @@ picked up with no manifest and no hard refresh.
 
 ## Rules
 
+- A **new theme** ships its **own layout** (`layouts/scripts/<layout>.phtml`), its **own header + footer
+  menus** (`configs/menus.ini`, rendered via `$this->menu()`), points **every themed page** at that
+  layout (`layout="…"` in the `tiger:page` hint), and keeps **CSS/JS in their own files** under
+  `assets/` — never reuse another theme's layout, never a hardcoded `<ul>`, never inline CSS/JS.
 - Recolor via a **skin** (`--bs-*` overlay), never component CSS; zero rebuild.
 - **No inline `<script>`/`<style>` in `.phtml`** (CMS content exempt) — JS → `asset()`, CSS → skin.
 - **Semantic Bootstrap utilities only** in views — no bespoke CSS (keeps it reskinnable).
