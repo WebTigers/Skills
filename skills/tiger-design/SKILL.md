@@ -117,27 +117,44 @@ chrome/nav is built for *its* pages and shouldn't hijack the site.
 This is the path for gate tiers **2** and **3** (a new theme for this install, or one to share) — not
 tier 1 (which is CMS rows on an existing theme, no module). A theme is a whole *view layer*, not a
 recolor — so a new theme is more than a skin. When you are building a new theme (not editing PUMA, not
-adding a skin), do these four things, the framework-native way (THEMES.md §8). Skipping any of them is
+adding a skin), do these five things, the framework-native way (THEMES.md §8). Skipping any of them is
 the usual reason a new theme looks half-applied.
 
 1. **Create the theme's own LAYOUT.** A theme owns its chrome. Add
-   `themes/<theme>/layouts/scripts/<layout>.phtml` — the `<html>` shell: the `<head>` (title + skin +
-   asset slots), the header/nav, `<?= $this->layout()->content ?>` for the page body, and the footer.
-   Ship a `default` layout at minimum (a few named layouts is fine when chrome varies — a landing header
-   vs an inner-page header). **Do not reuse another theme's layout** — a new theme means a new layout, or
-   its pages render in the base theme's chrome and nothing looks like the new design.
-2. **Build the theme's own header + footer MENUS.** Declare them in `themes/<theme>/configs/menus.ini`
+   `themes/<theme>/layouts/scripts/<layout>.phtml` — the `<html>` shell: the `<head>` (see step 2 — this
+   is the one that silently breaks SEO), the header/nav, `<?= $this->layout()->content ?>` for the page
+   body, and the footer. Ship a `default` layout at minimum (a few named layouts is fine when chrome
+   varies — a landing header vs an inner-page header). **Do not reuse another theme's layout** — a new
+   theme means a new layout, or its pages render in the base theme's chrome and nothing looks new.
+2. **Render the `<head>` through the SEO REGISTRY — never a hardcoded `<title>`.** Tiger's `<head>` is a
+   *registry* (TigerZF's `headTitle`/`headMeta`/`headLink`) that TigerSEO fills with the title, meta
+   description, robots, canonical, Open Graph, Twitter and JSON-LD. A layout that hardcodes `<title>` and
+   echoes a raw `pageHead` is **silently opted out of all of it** — no `seo_title`, no social cards, no
+   canonical, and the operator gets no warning (the SEO admin still stores values). So the `<head>` MUST
+   render the containers (copy PUMA's `<head>`, `themes/puma/layouts/scripts/layout.phtml`):
+   ```php
+   <?php if (!count($this->headTitle())) { $this->headTitle($this->title ?: ($this->siteName ?? 'Site')); } ?>
+   <?= $this->headTitle() ?><?= $this->headMeta() ?><?= $this->headLink() ?>
+   <?= $this->pageHead ?? '' ?>   <?php /* per-page raw <head> escape hatch — AFTER the registry */ ?>
+   ```
+   Seed `headTitle` from `$this->title`/`$this->siteName` only as a *fallback* (so a `<title>` always
+   renders and an author's `seo_title` still wins) — never a hardcoded literal. See THEMES.md §8c.
+3. **Build the theme's own header + footer MENUS.** Declare them in `themes/<theme>/configs/menus.ini`
    (e.g. a `[primary]` header menu and a `[footer]` / `[footer-social]` menu; items are `label` + `url`
    **or** `page_key`, nestable via `children`), and **render them in the layout** —
    `<?= $this->menu('primary', ['class'=>'navbar-nav','item_class'=>'nav-item','link_class'=>'nav-link']) ?>`
    for the header, `<?= $this->menu('footer') ?>` for the footer. They render out of the box (Tiger_Menu
    falls back to the theme `.ini`) and the CMS Menus admin lists them as editable (fork-on-first-edit).
    A hardcoded `<ul>` in the layout is wrong — nobody can edit it, and it won't localize or auth-filter.
-3. **Point every new themed PAGE at that layout.** Each theme-shipped page `content/<slug>.phtml` names
-   the layout in its hint: `<!-- tiger:page title="About" layout="<layout>" skin="default" -->`. Use the
-   theme's own layout (from step 1) for every page you build, so the chrome is consistent — never leave a
-   page on the base layout by omitting `layout`.
-4. **Put CSS and JS in their OWN files.** A theme's styles and scripts live under
+4. **Point every new themed PAGE at that layout, and give it per-page SEO.** Each theme-shipped page
+   `content/<slug>.phtml` names the layout in its hint and may add SEO attributes:
+   `<!-- tiger:page title="About" layout="<layout>" skin="default" description="…" image="<media-id-or-URL>" -->`.
+   Use the theme's own layout (from step 1) for every page — never leave a page on the base layout by
+   omitting `layout`. A content page does NOT go through the CMS SEO plugin, so `themeContentAction` feeds
+   the hint's `title`/`description`/`image` into the head registry for you (`image` = a media-library id
+   or an absolute URL); without the attributes the page still gets the site-level baseline. This only
+   works if the layout renders the head registry (step 2).
+5. **Put CSS and JS in their OWN files.** A theme's styles and scripts live under
    `themes/<theme>/assets/` — `assets/css/*.css`, `assets/js/*.js`, and skins in `assets/skins/*.css` —
    referenced with `$this->asset('css/theme.css')` / `$this->asset('js/theme.js')`, **never** an inline
    `<style>` or `<script>` in the layout or a page (the golden rule below). One file per concern:
