@@ -1,6 +1,6 @@
 ---
 name: tiger-design
-description: Design and build the visual layer of a Tiger (TigerZF) app the framework-native way — the PUMA/Bootstrap 5 zero-build theme, skins as CSS-variable overlays, reskinnable .phtml views, CMS blocks/partials/layouts, GrapesJS components, and theme modules. Use when styling or building any Tiger UI (a skin, a theme, a .phtml view, a CMS block or landing page) and to keep it reskinnable — no inline styles, no build toolchain.
+description: Design and build the visual layer of a Tiger (TigerZF) app the framework-native way — the PUMA/Bootstrap 5 zero-build theme, skins as CSS-variable overlays, reskinnable .phtml views, CMS blocks/partials/layouts, GrapesJS components, and theme modules. Use when styling or building any Tiger UI (a skin, a theme, a .phtml view, a CMS block or landing page) and to keep it reskinnable — no inline styles, no build toolchain. Also use to GATE a "create a new site" request into the right tier: content on an existing theme (CMS rows) vs a new theme for this install vs a shareable theme module.
 ---
 
 # Designing for Tiger
@@ -13,6 +13,38 @@ split right and a redesign is a config flip, not a migration — and the whole U
 PostCSS. `bootstrap.min.css` + the bundle, dropped in. You theme at **runtime** with CSS variables, never
 a compile step. Never introduce a frontend build; if a theme truly needs one, it stays quarantined in
 that theme.
+
+## First — gate a "new site" request: which of these three?
+
+When you're asked to **create a new site** (or a new look), STOP and settle which of these three it is
+*before building* — they differ by an order of magnitude in weight, in who can do them, and in how they
+behave on shared hosting. If the request doesn't already make it obvious, **ask the user** (offer these
+three); never silently default to the heaviest.
+
+1. **A new site on an EXISTING installed theme.** New *content*, styled by a theme that's already
+   installed and recolored by an existing **skin**: CMS `page` rows + a shared `layout` **row** (an
+   editable template the pages attach to) + a `menu`. Pure DB through the `/api` cms tools — takes
+   effect next request, **no files, no activation, no asset publish**, works at admin/content role on
+   any host including no-shell / split-docroot cPanel. **This is the default** — reach for it unless the
+   user genuinely wants a distinct view layer. (Here a "layout" is a CMS layout *row*, not a theme file.)
+
+2. **A new site with a NEW theme (its own layout) for THIS install.** A distinct *view layer* the base
+   theme can't express through content — its own chrome / nav structure / layout. Build it as a
+   `theme-<name>` module (see "Building a NEW theme" below), scoped `content` or `site`. Heavier and a
+   different tier of access: files under `application/modules/`, `module:activate`, and an **asset
+   publish** (the copy-mirror step on symlink-off / split-docroot hosts) — a **Forge / superadmin** act,
+   not something a content-role agent can do. Local to this install; not packaged for anyone else.
+
+3. **A NEW theme MODULE to SHARE with other Tiger users.** Everything in (2), built to *distribution*
+   standard: a complete `theme.json` manifest, `TIGER.md`, `LICENSE`, logo/screenshots, its **own repo**,
+   SemVer + CI, and a listing in the Directory or a marketplace (see MARKETPLACE.md / SELLING.md). The
+   theme is now a **product**, so portability and the semantic **block contract** (THEMES.md §3) are
+   requirements, not extras — a buyer must be able to switch to it and back without breaking their pages.
+
+The weight climbs 1 → 2 → 3; so does the access needed and the blast radius of a mistake (a bad `page`
+row breaks one URL; a throwing module Bootstrap breaks every page). Pick the lowest tier that meets the
+need. And **never one module per site or per tenant** — multi-tenant theming is *one* theme selected
+per-org via a config row, not a module cloned per site (the WordPress-multisite trap).
 
 ## Theme vs. skin — two axes, different weights
 
@@ -82,9 +114,11 @@ chrome/nav is built for *its* pages and shouldn't hijack the site.
 
 ## Building a NEW theme — its layout, its menus, its pages
 
-A theme is a whole *view layer*, not a recolor — so a new theme is more than a skin. When you are
-building a new theme (not editing PUMA, not adding a skin), do these four things, the framework-native
-way (THEMES.md §8). Skipping any of them is the usual reason a new theme looks half-applied.
+This is the path for gate tiers **2** and **3** (a new theme for this install, or one to share) — not
+tier 1 (which is CMS rows on an existing theme, no module). A theme is a whole *view layer*, not a
+recolor — so a new theme is more than a skin. When you are building a new theme (not editing PUMA, not
+adding a skin), do these four things, the framework-native way (THEMES.md §8). Skipping any of them is
+the usual reason a new theme looks half-applied.
 
 1. **Create the theme's own LAYOUT.** A theme owns its chrome. Add
    `themes/<theme>/layouts/scripts/<layout>.phtml` — the `<html>` shell: the `<head>` (title + skin +
@@ -124,6 +158,9 @@ picked up with no manifest and no hard refresh.
 
 ## Rules
 
+- **Gate a "new site" first** (ask if unclear): (1) content on an existing theme = CMS `page` + `layout`
+  ROW + `menu` + a skin, no files — the **default**; (2) a new theme/layout for this install = a module
+  (Forge/superadmin); (3) a theme module to **share** = (2) + manifest/repo/listing. Pick the lowest tier.
 - A **new theme** ships its **own layout** (`layouts/scripts/<layout>.phtml`), its **own header + footer
   menus** (`configs/menus.ini`, rendered via `$this->menu()`), points **every themed page** at that
   layout (`layout="…"` in the `tiger:page` hint), and keeps **CSS/JS in their own files** under
