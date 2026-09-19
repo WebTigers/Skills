@@ -146,7 +146,9 @@ Then:
 **You will not receive the image bytes.** A tool result is text in your context window, and base64 of
 a single 1024px PNG is well over a megabyte of it. You get ids and metadata; a human looks at the
 picture. Judge by the prompt you sent and the parameters echoed back, and if you need a human eye, say
-so rather than guessing.
+so rather than guessing. **But if your surface can actually see the generated image, look at it —
+especially when text may appear in the frame, since generated signage, labels, and lettering are
+frequently misspelled.**
 
 **Write real alt text.** Pass `alt` on promote. A generated image with no alt text is an accessibility
 failure you introduced, and you are the one who knows what was asked for.
