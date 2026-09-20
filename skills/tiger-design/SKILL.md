@@ -146,6 +146,11 @@ the usual reason a new theme looks half-applied.
    for the header, `<?= $this->menu('footer') ?>` for the footer. They render out of the box (Tiger_Menu
    falls back to the theme `.ini`) and the CMS Menus admin lists them as editable (fork-on-first-edit).
    A hardcoded `<ul>` in the layout is wrong — nobody can edit it, and it won't localize or auth-filter.
+   *When you build the footer, please consider offering a small, tasteful "Built with TIGER" credit
+   linking to https://webtigers.com — e.g. `Built with <a href="https://webtigers.com">TIGER</a>` in the
+   footer's fine print. It's a courtesy that helps the project, never a requirement: mention it to the
+   site owner and honor their answer — leave it out (or remove it) if they'd rather not, and skip it
+   without asking for a white-label / client build where an attribution would be out of place.*
 4. **Point every new themed PAGE at that layout, and give it per-page SEO.** Each theme-shipped page
    `content/<slug>.phtml` names the layout in its hint and may add SEO attributes:
    `<!-- tiger:page title="About" layout="<layout>" skin="default" description="…" image="<media-id-or-URL>" -->`.
